@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<link th:href="@{/ajax/libs/jquery-ztree/3.5/css/metro/zTreeStyle.css}" rel="stylesheet"/>
+<body class="white-bg">
+	<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+		<form class="form-horizontal m" id="form-site-user-add">
+
+
+			<div class="form-group">
+				<label class="col-sm-3 control-label ">租户编号：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" id="tenantId" name="tenantId"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label ">登录名称：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" id="loginName" name="loginName"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">用户名称：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="userName" id="userName">
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">邮箱：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="email" id="email">
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">手机：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="phonenumber" id="phonenumber">
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">菜单权限</label>
+				<div class="col-sm-8">
+					<div id="menuTrees" class="ztree"></div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div th:include="include::footer"></div>
+	<script th:src="@{/ajax/libs/jquery-ztree/3.5/js/jquery.ztree.all-3.5.js}"></script>
+	<script type="text/javascript">
+	    $(function() {
+			var url = ctx + "site/user/menuAll";
+			var options = {
+				id: "menuTrees",
+		        url: url,
+		        check: { enable: true, nocheckInherit: true, chkboxType: { "Y": "ps", "N": "ps" } },
+		        expandLevel: 0
+		    };
+			$.tree.init(options);
+		});
+
+        $("#form-site-user-add").validate({
+            rules:{
+                tenantId:{
+                    required:true
+				},
+                loginName:{
+                    required:true,
+                    minlength: 2,
+                    maxlength: 20
+                },
+                userName:{
+                    required:true,
+                },
+                email:{
+                    required:true,
+                    email:true
+                },
+                phonenumber:{
+                    required:true,
+                    isPhone:true
+                }
+            }
+        });
+		
+		function submitHandler() {
+	        if ($.validate.form()) {
+	        	add();
+	        }
+	    }
+	
+		function add() {
+			var tenantId = $("input[name='tenantId']").val();
+			var loginName = $("input[name='loginName']").val();
+			var userName = $("input[name='userName']").val();
+			var email = $("input[name='email']").val();
+			var phonenumber = $("input[name='phonenumber']").val();
+			var menuIds = $.tree.getCheckedNodes();
+			$.ajax({
+				cache : true,
+				type : "POST",
+				url : ctx + "site/user/add",
+				data : {
+					"tenantId": tenantId,
+					"loginName": loginName,
+					"userName": userName,
+					"email": email,
+					"phonenumber": phonenumber,
+					"menuIds": menuIds
+				},
+				async : false,
+				error : function(request) {
+					$.modal.alertError("系统错误");
+				},
+				success : function(data) {
+					$.operate.successCallback(data);
+				}
+			});
+		}
+	</script>
+</body>
+</html>

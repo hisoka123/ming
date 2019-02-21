@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<link th:href="@{/ajax/libs/jquery-ztree/3.5/css/metro/zTreeStyle.css}" rel="stylesheet"/>
+<body class="white-bg">
+	<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+		<form class="form-horizontal m" id="form-site-user-edit">
+			<input name="userId" id="userId" type="hidden" th:value="${user['userId']}"/>
+			<div class="form-group">
+				<label class="col-sm-3 control-label ">租户编号：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" readonly="true" id="tenantId" name="tenantId" th:value="${user['tenantId']}"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label ">登录名称：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" readonly="true" th:value="${user['loginName']}"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">用户名称：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="userName" id="userName" th:value="${user['userName']}" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">邮箱：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="email" id="email" th:value="${user['email']}" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">手机：</label>
+				<div class="col-sm-8">
+					<input class="form-control" type="text" name="phonenumber" id="phonenumber" th:value="${user['phonenumber']}"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">菜单权限</label>
+				<div class="col-sm-8">
+					<div id="menuTrees" class="ztree"></div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div th:include="include::footer"></div>
+	<script th:src="@{/ajax/libs/jquery-ztree/3.5/js/jquery.ztree.all-3.5.js}"></script>
+	<script>
+
+        $(function() {
+            var url = ctx + "site/user/roleMenuTreeData?userId=" + $("#userId").val() + "&tenantId=" + $("#tenantId").val();
+            var options = {
+                id: "menuTrees",
+                url: url,
+                check: { enable: true, nocheckInherit: true, chkboxType: { "Y": "ps", "N": "ps" } },
+                expandLevel: 0
+            };
+            $.tree.init(options);
+        });
+
+        $("#form-site-user-edit").validate({
+        	rules:{
+        		userName:{
+        			required:true,
+        		},
+        		email:{
+        			required:true,
+                    email:true
+        		},
+        		phonenumber:{
+        			required:true,
+        			isPhone:true
+        		},
+        	},
+        	submitHandler:function(form){
+        		edit();
+        	}
+        });
+        
+        function submitHandler() {
+	        if ($.validate.form()) {
+	        	edit();
+	        }
+	    }
+
+        function edit() {
+        	var userId = $("input[name='userId']").val();
+        	var deptId = $("input[name='deptId']").val();
+        	var userName = $("input[name='userName']").val();
+        	var email = $("input[name='email']").val();
+        	var phonenumber = $("input[name='phonenumber']").val();
+            var menuIds = $.tree.getCheckedNodes();
+        	$.ajax({
+        		cache : true,
+        		type : "POST",
+        		url : ctx + "site/user/edit",
+        		data : {
+        			"userId": userId,
+        			"deptId": deptId,
+        			"userName": userName,
+        			"email": email,
+        			"phonenumber": phonenumber,
+        			"menuIds": menuIds
+        		},
+        		async : false,
+        		error : function(request) {
+        			$.modal.alertError("系统错误");
+        		},
+        		success : function(data) {
+        			$.operate.successCallback(data);
+        		}
+        	});
+        }
+
+    </script>
+</body>
+</html>
